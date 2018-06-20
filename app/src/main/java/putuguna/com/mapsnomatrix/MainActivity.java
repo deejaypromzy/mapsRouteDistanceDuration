@@ -37,6 +37,8 @@ import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 
 public class MainActivity extends Activity implements LocationListener {
+    
+    public static final int REQUEST_CODE_LOCATION = 121;
 
     private GoogleMap googleMap;
     private ApiService serviceGoogleDirection;
@@ -52,9 +54,26 @@ public class MainActivity extends Activity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         buttonCheckList = (Button) findViewById(R.id.buttonCekList);
-
-
-
+        requestPermission();
+    }
+    
+     /**
+    * Update Juni 2018
+    * For users that use OS version 7 and 8, it must be crash because the permission of location is denied
+    * Please use code below to fix it.
+    */
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                        },
+                REQUEST_CODE_LOCATION);
+    }
+    
+    private void setDataListAfterPermissionAllowed(){
+        //1. initialization your maps
+        //2. set your lat and lang
         try {
             initilizeMap();
             Data d1 = new Data();
@@ -94,9 +113,6 @@ public class MainActivity extends Activity implements LocationListener {
             setDistanceForAll(data);
             addMarker(data);
 
-
-
-
         }catch (Exception e){e.printStackTrace();}
 
         buttonCheckList.setOnClickListener(new View.OnClickListener() {
@@ -106,6 +122,18 @@ public class MainActivity extends Activity implements LocationListener {
                 startActivity(intent);
             }
         });
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case REQUEST_CODE_LOCATION:
+                if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    setDataListAfterPermissionAllowed()
+                }else{
+                    Toast.makeText(this, "Permission denied!. Please enable manualy at menu setting in your device", Toast.LENGTH_SHORT).show();
+                }
+        }
     }
 
     @Override
